@@ -61,26 +61,6 @@ class AnalizadorDeNotas {
         }
     }
 
-    //public boolean validarRut(int rut) {
-    //    /**Valida un rut */
-    //    for (int i = 0; i < cantEstudiantes; i++) {
-    //        if(this.rut[i] == rut) {
-    //            return true;
-    //        }
-    //        return false;
-    //    }
-    //}
-
-    //public void guardarRut(int index, int rutNuevo) {
-    //    if(validarRut(rutNuevo)==true && index < cantEstudiantes && index ) {
-    //        for (int i = 0; i < cantEstudiantes; i++) {
-    //            rut[i] = 1000 + i
-    //            this.rut[i] = rut;
-    //            rut.add(int rut (i));
-    //        }
-    //    }
-    //}
-
     //================================================================================
     //CONSTRUCTOR 2
     public AnalizadorDeNotas(int cantEstudiantes, int cantEvaluaciones, String[] evaluaciones) {
@@ -89,7 +69,7 @@ class AnalizadorDeNotas {
 
         /**Se copian los nombres de las evaluaciones*/
         this.evaluaciones = new String[cantEvaluaciones];
-        for (int j = 0; j < cantEstudiantes; j++) {
+        for (int j = 0; j < cantEvaluaciones; j++) {
             this.evaluaciones[j] = evaluaciones[j];
         }
 
@@ -101,9 +81,10 @@ class AnalizadorDeNotas {
 
         /**Se copia la matiz de las calificaciones*/
         this.notas = new double[cantEstudiantes][cantEvaluaciones];
+        Random rand = new Random();
         for (int i = 0; i < cantEstudiantes; i++) {
             for (int j = 0; j < cantEvaluaciones; j++) {
-                this.notas[i][j] = notas[i][j];
+                this.notas[i][j] = 1.0 + rand.nextDouble() * 6.0;
             }
         }
     }
@@ -172,7 +153,7 @@ class AnalizadorDeNotas {
 
         /**Sumar todas las notas del estudiante buscado por su RUT*/
         double suma = 0;
-        for (int j = 0; j < cantEstudiantes; j++) {
+        for (int j = 0; j < cantEvaluaciones; j++) {
             suma += this.notas[index][j];
         }
 
@@ -230,7 +211,7 @@ class AnalizadorDeNotas {
             double suma = 0;
 
             /**Se suman todas las notas del estudiante i*/
-            for (int j = 0; j < cantEstudiantes; j++) {
+            for (int j = 0; j < cantEvaluaciones; j++) {
                 suma += this.notas[i][j];
             }
 
@@ -266,7 +247,7 @@ class AnalizadorDeNotas {
             }
 
             /**Calculo de la varianza de las notas del estudiante i (suma de las diferencias dividido en la cantidad de estudiantes)*/
-            varianzas[i] = sumadeRestas / cantEstudiantes;
+            varianzas[i] = sumadeRestas / cantEvaluaciones;
         }
 
         /**Se retorna el valor de las varianzas*/
@@ -275,45 +256,42 @@ class AnalizadorDeNotas {
 
     //Metodo que calcula el promedio de las evaluaciones especificas para cada estudiante
     public double[] calcularPromediosEvaluaciones(String[] evaluaciones) {
-        /**Arreglo de promedios de notas, uno por estudiante*/
         double[] promedios = new double[cantEstudiantes];
+        int[] indices = new int[evaluaciones.length];
 
-        /**Encontrar el nombre de las evaluaciones que se necesitan*/
-        int[] nombreEvaluaciones = new int[evaluaciones.length];
-        for (int i = 0; i < cantEstudiantes; i++) {
+        for (int k = 0; k < evaluaciones.length; k++) {
+            indices[k] = -1;
             for (int j = 0; j < cantEvaluaciones; j++) {
-                for (int k = 0; k < evaluaciones.length; k++) {
-                    nombreEvaluaciones[k] = -1; // Inicializar en -1
-
-                    if (this.evaluaciones[j].equals(nombreEvaluaciones[k])) {
-                        nombreEvaluaciones[k] = j;
-                        break;
-                    }
-                    if (nombreEvaluaciones[k] == -1) {
-                        System.out.println("Evaluación " + evaluaciones[k] + " no existe.");
-                    }
-                    /**C*/
-
-                    double suma = 0;
-                    int contador = 0;
-                    for (int indice : nombreEvaluaciones) {
-                        if (indice != -1) { //Si, solo si la evaluacion es escontrada
-                            suma += this.notas[i][indice];
-                            contador++;
-                        }
-                    }
-                    promedios[i] = (contador > 0) ? suma / contador : 0.0;
+                if (this.evaluaciones[j].equals(evaluaciones[k])) {
+                    indices[k] = j;
+                    break;
                 }
-
+            }
+            if (indices[k] == -1) {
+                System.out.println("Evaluación " + evaluaciones[k] + " no existe.");
             }
         }
+
+        for (int i = 0; i < cantEstudiantes; i++) {
+            double suma = 0;
+            int contador = 0;
+            for (int idx : indices) {
+                if (idx != -1) {
+                    suma += this.notas[i][idx];
+                    contador++;
+                }
+            }
+            promedios[i] = (contador > 0) ? suma / contador : 0.0;
+        }
+
         return promedios;
     }
+
 
     //Metodo para encontrar la calificacion maxima para la evaluacion seleccionada
     public String encontrarMaximos(int index) {
         /**Validar el index*/
-        if (index < 0 || index >= cantEstudiantes) {
+        if (index < 0 || index >= cantEvaluaciones) {
             System.out.println("Evaluación" +index + "no encontrada");
             return null;
         }
@@ -338,13 +316,13 @@ public class Main {
         AnalizadorDeNotas analizador1 = new AnalizadorDeNotas(100,3);
         String[] notas = new String[5];
 
-        double promedio =analizador1.calcularPromedioEstudiante(1002);
+        double promedio =analizador1.calcularPromedioEstudiante(1);
         System.out.println("El promedio del estudiante 1002 es: " + promedio);
 
-        double promedio1 = analizador1.calcularPromedioEvaluacion(1002);
+        double promedio1 = analizador1.calcularPromedioEvaluacion(1);
         System.out.println("Promedio de la evaluación 1002 es: " + promedio1);
 
-        double varianzaEvaluacion1 = analizador1.calcularVarianzaEvaluacion(1002);
+        double varianzaEvaluacion1 = analizador1.calcularVarianzaEvaluacion(1);
         System.out.println("Varianza de la evaluacion 1002 es: " + varianzaEvaluacion1);
 
         String[] seleccion = {"E_1"};
